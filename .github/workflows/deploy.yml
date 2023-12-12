@@ -6,35 +6,23 @@ on:
 
 jobs: 
   package-python:
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - macos-11
-          - ubuntu-latest
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:     
       - name: Checkout code
         uses: actions/checkout@v4
+          
+      - name: Build distributions
+        run: python -m build
 
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.8.1
-            
       - name: Upload binary wheel
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ format('bdist.{0}', matrix.os) }}
-          path: wheelhouse/decthehalls-*.whl
-
-      - name: Build source distribution (Linux only)
-        if: contains(matrix.os, 'ubuntu')
-        run: python -m build --sdist
-            
-      - name: Upload source distribution (from Linux)
-        uses: actions/upload-artifact@v2
-        if: contains(matrix.os, 'ubuntu')
+          name: bdist
+          path: dist/decthehalls-*.whl
+          
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v3
         with:
           name: sdist
           path: dist/decthehalls-*.tar.gz
@@ -52,8 +40,8 @@ jobs:
       - name: Rename distributions
         run: |
           mkdir dist
-          ls bdist.*/
-          mv bdist.*/decthehalls-*.whl dist/
+          ls bdist/
+          mv bdist/decthehalls-*.whl dist/
           mv sdist/decthehalls-*.tar.gz dist/
           ls dist
   
