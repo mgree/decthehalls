@@ -1,0 +1,77 @@
+name: PyPI package deployment
+
+on:
+  pull_request:
+  push:
+
+jobs: 
+  package-python:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-11
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:     
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.8.1
+            
+      - name: Upload binary wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ format('bdist.{0}', matrix.os) }}
+          path: wheelhouse/decthehalls-*.whl
+
+      - name: Build source distribution (Linux only)
+        if: contains(matrix.os, 'ubuntu')
+        run: python -m build --sdist
+            
+      - name: Upload source distribution (from Linux)
+        uses: actions/upload-artifact@v2
+        if: contains(matrix.os, 'ubuntu')
+        with:
+          name: sdist
+          path: dist/decthehalls-*.tar.gz
+
+  deploy:
+    needs:
+      - package-python
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags')
+      
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v3
+
+      - name: Rename distributions
+        run: |
+          mkdir dist
+          ls bdist.*/
+          mv bdist.*/decthehalls-*.whl dist/
+          mv sdist/decthehalls-*.tar.gz dist/
+          ls dist
+  
+      - name: Deploy 'latest' release on GH
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Python source and binary distributions"
+          files: |
+            dist/*
+
+      - name: Deploy test distribution to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          verbose: true
+          repository_url: https://test.pypi.org/legacy/
+          skip_existing: true            
+
