@@ -1,0 +1,21 @@
+[project]
+name = "decthehalls"
+version = "0.0.1"
+authors = [ { name="Michael Greenberg", email="michael@greenberg.science" } ]
+description = "A demo package containing some decorators for tracing"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: System :: Logging"
+]
+
+[project.urls]
+Homepage = "https://github.com/mgree/decthehalls"
+Issues = "https://github.com/mgree/decthehalls/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
