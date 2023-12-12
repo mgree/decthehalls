@@ -47,16 +47,6 @@ jobs:
           mv sdist/decthehalls-*.tar.gz dist/
           ls dist
   
-      - name: Deploy 'latest' release on GH
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Python source and binary distributions"
-          files: |
-            dist/*
-
       - name: Deploy test distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
